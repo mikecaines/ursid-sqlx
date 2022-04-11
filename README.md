@@ -20,8 +20,9 @@ The name `URSID` comes from: Update, Replace, Select, Insert, Delete.
 - An expressions module full of `rust` functions & traits that mirror SQL functions, such as
   `count()`, `coalesce()`, etc.
   These can be used to compose arbitrary SQL expressions & grammar.
-- An `Sql` type, that all of the API's produce, which safely manages the coupling of
+- An `Sql` type, that all the API's produce, which safely manages the coupling of
   the text & values components of a parameterized query.
+- `Sql` "fragments" can also be concatenated together similar to Strings.
 - Functions such as `query()`, `query_as()`, etc., just like in `sqlx`, but work with the
   `Sql` type.
 
