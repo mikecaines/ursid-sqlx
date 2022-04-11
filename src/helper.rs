@@ -43,14 +43,14 @@ impl<DB: Database> SqlStatementHelper<DB> {
 	pub fn select<N: Into<String>>(
 		&self,
 		table_name: N,
-	) -> sql_lang::statement::select::SelectBuilder<DB, false, false, false, false> {
+	) -> sql_lang::statement::select::SelectBuilder<DB, false, false, false, false, false> {
 		sql_lang::statement::Select::build(table_name)
 	}
 
 	pub fn select_with_join<F: Into<sql_lang::clause::SqlFrom<DB>>>(
 		&self,
 		from_clause: F,
-	) -> sql_lang::statement::select::SelectBuilder<DB, false, false, false, true> {
+	) -> sql_lang::statement::select::SelectBuilder<DB, false, false, false, false, true> {
 		sql_lang::statement::Select::build_with_join(from_clause)
 	}
 

@@ -17,7 +17,9 @@ pub struct Select<DB: Database> {
 }
 
 impl<DB: Database> Select<DB> {
-	pub fn build<N: Into<String>>(table_name: N) -> SelectBuilder<DB, false, false, false, false> {
+	pub fn build<N: Into<String>>(
+		table_name: N,
+	) -> SelectBuilder<DB, false, false, false, false, false> {
 		SelectBuilder {
 			from_clause: SqlFrom::from_table_name(table_name),
 			select_columns: vec![],
@@ -30,7 +32,7 @@ impl<DB: Database> Select<DB> {
 
 	pub fn build_with_join<F: Into<SqlFrom<DB>>>(
 		from_clause: F,
-	) -> SelectBuilder<DB, false, false, false, true> {
+	) -> SelectBuilder<DB, false, false, false, false, true> {
 		SelectBuilder {
 			from_clause: from_clause.into(),
 			select_columns: vec![],
@@ -136,6 +138,7 @@ pub struct SelectBuilder<
 	DB: Database,
 	const HAS_COLUMNS: bool,
 	const HAS_GROUP_BY: bool,
+	const HAS_HAVING: bool,
 	const HAS_ORDER_BY: bool,
 	const HAS_JOIN: bool,
 > {
@@ -151,16 +154,17 @@ impl<
 		DB: Database,
 		const HAS_COLUMNS: bool,
 		const HAS_GROUP_BY: bool,
+		const HAS_HAVING: bool,
 		const HAS_ORDER_BY: bool,
 		const HAS_JOIN: bool,
-	> SelectBuilder<DB, HAS_COLUMNS, HAS_GROUP_BY, HAS_ORDER_BY, HAS_JOIN>
+	> SelectBuilder<DB, HAS_COLUMNS, HAS_GROUP_BY, HAS_HAVING, HAS_ORDER_BY, HAS_JOIN>
 {
 	/// Adds an arbitrary [Sql] expression to the list of SELECT predicates.
 	pub fn select_expression<E: Into<Sql<DB>>, A: Into<String>>(
 		mut self,
 		expr: E,
 		alias: A,
-	) -> SelectBuilder<DB, true, HAS_GROUP_BY, HAS_ORDER_BY, HAS_JOIN> {
+	) -> SelectBuilder<DB, true, HAS_GROUP_BY, HAS_HAVING, HAS_ORDER_BY, HAS_JOIN> {
 		self.select_columns
 			.push(SelectPredicateKind::Expression(SelectedExpression {
 				expr: expr.into(),
@@ -189,26 +193,41 @@ impl<
 }
 
 impl<DB: Database, const HAS_COLUMNS: bool, const HAS_ORDER_BY: bool, const HAS_JOIN: bool>
-	SelectBuilder<DB, HAS_COLUMNS, true, HAS_ORDER_BY, HAS_JOIN>
+	SelectBuilder<DB, HAS_COLUMNS, true, false, HAS_ORDER_BY, HAS_JOIN>
 {
-	pub fn with_having_clause(mut self, clause: sql_lang::clause::Having<DB>) -> Self {
+	pub fn with_having_clause(
+		mut self,
+		clause: sql_lang::clause::Having<DB>,
+	) -> SelectBuilder<DB, HAS_COLUMNS, true, true, HAS_ORDER_BY, HAS_JOIN> {
 		self.having_clause_builder = Some(if let Some(builder) = self.having_clause_builder {
 			builder.merge_with_clause(clause)
 		} else {
 			clause.into_builder()
 		});
 
-		self
+		SelectBuilder {
+			from_clause: self.from_clause,
+			select_columns: self.select_columns,
+			where_clause_builder: self.where_clause_builder,
+			group_by_clause: self.group_by_clause,
+			having_clause_builder: self.having_clause_builder,
+			order_by_clause: self.order_by_clause,
+		}
 	}
 }
 
-impl<DB: Database, const HAS_COLUMNS: bool, const HAS_GROUP_BY: bool, const HAS_ORDER_BY: bool>
-	SelectBuilder<DB, HAS_COLUMNS, HAS_GROUP_BY, HAS_ORDER_BY, false>
+impl<
+		DB: Database,
+		const HAS_COLUMNS: bool,
+		const HAS_GROUP_BY: bool,
+		const HAS_HAVING: bool,
+		const HAS_ORDER_BY: bool,
+	> SelectBuilder<DB, HAS_COLUMNS, HAS_GROUP_BY, HAS_HAVING, HAS_ORDER_BY, false>
 {
 	pub fn select_column<N: Into<String>>(
 		mut self,
 		name: N,
-	) -> SelectBuilder<DB, true, HAS_GROUP_BY, HAS_ORDER_BY, false> {
+	) -> SelectBuilder<DB, true, HAS_GROUP_BY, HAS_HAVING, HAS_ORDER_BY, false> {
 		self.select_columns
 			.push(SelectPredicateKind::Column(SelectedColumn {
 				column: ColRef {
@@ -232,7 +251,7 @@ impl<DB: Database, const HAS_COLUMNS: bool, const HAS_GROUP_BY: bool, const HAS_
 		mut self,
 		name: N,
 		alias: A,
-	) -> SelectBuilder<DB, true, HAS_GROUP_BY, HAS_ORDER_BY, false> {
+	) -> SelectBuilder<DB, true, HAS_GROUP_BY, HAS_HAVING, HAS_ORDER_BY, false> {
 		self.select_columns
 			.push(SelectPredicateKind::Column(SelectedColumn {
 				column: ColRef {
@@ -255,7 +274,7 @@ impl<DB: Database, const HAS_COLUMNS: bool, const HAS_GROUP_BY: bool, const HAS_
 	pub fn select_columns<N: Into<String>, S: IntoIterator<Item = N>>(
 		mut self,
 		names: S,
-	) -> SelectBuilder<DB, true, HAS_GROUP_BY, HAS_ORDER_BY, false> {
+	) -> SelectBuilder<DB, true, HAS_GROUP_BY, HAS_HAVING, HAS_ORDER_BY, false> {
 		for name in names.into_iter() {
 			self.select_columns
 				.push(SelectPredicateKind::Column(SelectedColumn {
@@ -284,7 +303,7 @@ impl<DB: Database, const HAS_COLUMNS: bool, const HAS_GROUP_BY: bool, const HAS_
 	>(
 		mut self,
 		names: S,
-	) -> SelectBuilder<DB, true, HAS_GROUP_BY, HAS_ORDER_BY, false> {
+	) -> SelectBuilder<DB, true, HAS_GROUP_BY, HAS_HAVING, HAS_ORDER_BY, false> {
 		for (name, alias) in names.into_iter() {
 			self.select_columns
 				.push(SelectPredicateKind::Column(SelectedColumn {
@@ -337,14 +356,19 @@ impl<DB: Database, const HAS_COLUMNS: bool, const HAS_GROUP_BY: bool, const HAS_
 	}
 }
 
-impl<DB: Database, const HAS_COLUMNS: bool, const HAS_GROUP_BY: bool, const HAS_ORDER_BY: bool>
-	SelectBuilder<DB, HAS_COLUMNS, HAS_GROUP_BY, HAS_ORDER_BY, true>
+impl<
+		DB: Database,
+		const HAS_COLUMNS: bool,
+		const HAS_GROUP_BY: bool,
+		const HAS_HAVING: bool,
+		const HAS_ORDER_BY: bool,
+	> SelectBuilder<DB, HAS_COLUMNS, HAS_GROUP_BY, HAS_HAVING, HAS_ORDER_BY, true>
 {
 	pub fn select_column<T: Into<String>, C: Into<String>>(
 		mut self,
 		table_name: T,
 		column_name: C,
-	) -> SelectBuilder<DB, true, HAS_GROUP_BY, HAS_ORDER_BY, true> {
+	) -> SelectBuilder<DB, true, HAS_GROUP_BY, HAS_HAVING, HAS_ORDER_BY, true> {
 		self.select_columns
 			.push(SelectPredicateKind::Column(SelectedColumn {
 				column: ColRef {
@@ -369,7 +393,7 @@ impl<DB: Database, const HAS_COLUMNS: bool, const HAS_GROUP_BY: bool, const HAS_
 		table_name: T,
 		column_name: C,
 		alias: A,
-	) -> SelectBuilder<DB, true, HAS_GROUP_BY, HAS_ORDER_BY, true> {
+	) -> SelectBuilder<DB, true, HAS_GROUP_BY, HAS_HAVING, HAS_ORDER_BY, true> {
 		self.select_columns
 			.push(SelectPredicateKind::Column(SelectedColumn {
 				column: ColRef {
@@ -392,7 +416,7 @@ impl<DB: Database, const HAS_COLUMNS: bool, const HAS_GROUP_BY: bool, const HAS_
 	pub fn select_columns<T: Into<String>, C: Into<String>, S: IntoIterator<Item = (T, C)>>(
 		mut self,
 		pairs: S,
-	) -> SelectBuilder<DB, true, HAS_GROUP_BY, HAS_ORDER_BY, true> {
+	) -> SelectBuilder<DB, true, HAS_GROUP_BY, HAS_HAVING, HAS_ORDER_BY, true> {
 		for (table_name, column_name) in pairs.into_iter() {
 			self.select_columns
 				.push(SelectPredicateKind::Column(SelectedColumn {
@@ -422,7 +446,7 @@ impl<DB: Database, const HAS_COLUMNS: bool, const HAS_GROUP_BY: bool, const HAS_
 	>(
 		mut self,
 		pairs: S,
-	) -> SelectBuilder<DB, true, HAS_GROUP_BY, HAS_ORDER_BY, true> {
+	) -> SelectBuilder<DB, true, HAS_GROUP_BY, HAS_HAVING, HAS_ORDER_BY, true> {
 		for (table_name, column_name, alias) in pairs.into_iter() {
 			self.select_columns
 				.push(SelectPredicateKind::Column(SelectedColumn {
@@ -476,13 +500,18 @@ impl<DB: Database, const HAS_COLUMNS: bool, const HAS_GROUP_BY: bool, const HAS_
 	}
 }
 
-impl<DB: Database, const HAS_COLUMNS: bool, const HAS_GROUP_BY: bool, const HAS_JOIN: bool>
-	SelectBuilder<DB, HAS_COLUMNS, HAS_GROUP_BY, false, HAS_JOIN>
+impl<
+		DB: Database,
+		const HAS_COLUMNS: bool,
+		const HAS_GROUP_BY: bool,
+		const HAS_HAVING: bool,
+		const HAS_JOIN: bool,
+	> SelectBuilder<DB, HAS_COLUMNS, HAS_GROUP_BY, HAS_HAVING, false, HAS_JOIN>
 {
 	pub fn with_order_by_clause(
 		self,
 		order_by_clause: OrderBy<DB>,
-	) -> SelectBuilder<DB, HAS_COLUMNS, HAS_GROUP_BY, true, HAS_JOIN> {
+	) -> SelectBuilder<DB, HAS_COLUMNS, HAS_GROUP_BY, HAS_HAVING, true, HAS_JOIN> {
 		SelectBuilder {
 			from_clause: self.from_clause,
 			select_columns: self.select_columns,
@@ -494,13 +523,13 @@ impl<DB: Database, const HAS_COLUMNS: bool, const HAS_GROUP_BY: bool, const HAS_
 	}
 }
 
-impl<DB: Database, const HAS_COLUMNS: bool, const HAS_GROUP_BY: bool>
-	SelectBuilder<DB, HAS_COLUMNS, HAS_GROUP_BY, false, false>
+impl<DB: Database, const HAS_COLUMNS: bool, const HAS_GROUP_BY: bool, const HAS_HAVING: bool>
+	SelectBuilder<DB, HAS_COLUMNS, HAS_GROUP_BY, HAS_HAVING, false, false>
 {
 	pub fn order_by<S: IntoIterator<Item = (Col, bool)>, Col: Into<String>>(
 		self,
 		predicates: S,
-	) -> SelectBuilder<DB, HAS_COLUMNS, HAS_GROUP_BY, true, false> {
+	) -> SelectBuilder<DB, HAS_COLUMNS, HAS_GROUP_BY, HAS_HAVING, true, false> {
 		SelectBuilder {
 			from_clause: self.from_clause,
 			select_columns: self.select_columns,
@@ -512,8 +541,8 @@ impl<DB: Database, const HAS_COLUMNS: bool, const HAS_GROUP_BY: bool>
 	}
 }
 
-impl<DB: Database, const HAS_COLUMNS: bool, const HAS_GROUP_BY: bool>
-	SelectBuilder<DB, HAS_COLUMNS, HAS_GROUP_BY, false, true>
+impl<DB: Database, const HAS_COLUMNS: bool, const HAS_GROUP_BY: bool, const HAS_HAVING: bool>
+	SelectBuilder<DB, HAS_COLUMNS, HAS_GROUP_BY, HAS_HAVING, false, true>
 {
 	pub fn order_by<
 		S: IntoIterator<Item = (Tab, Col, bool)>,
@@ -522,7 +551,7 @@ impl<DB: Database, const HAS_COLUMNS: bool, const HAS_GROUP_BY: bool>
 	>(
 		self,
 		predicates: S,
-	) -> SelectBuilder<DB, HAS_COLUMNS, HAS_GROUP_BY, true, true> {
+	) -> SelectBuilder<DB, HAS_COLUMNS, HAS_GROUP_BY, HAS_HAVING, true, true> {
 		SelectBuilder {
 			from_clause: self.from_clause,
 			select_columns: self.select_columns,
@@ -534,13 +563,18 @@ impl<DB: Database, const HAS_COLUMNS: bool, const HAS_GROUP_BY: bool>
 	}
 }
 
-impl<DB: Database, const HAS_COLUMNS: bool, const HAS_ORDER_BY: bool, const HAS_JOIN: bool>
-	SelectBuilder<DB, HAS_COLUMNS, false, HAS_ORDER_BY, HAS_JOIN>
+impl<
+		DB: Database,
+		const HAS_COLUMNS: bool,
+		const HAS_HAVING: bool,
+		const HAS_ORDER_BY: bool,
+		const HAS_JOIN: bool,
+	> SelectBuilder<DB, HAS_COLUMNS, false, HAS_HAVING, HAS_ORDER_BY, HAS_JOIN>
 {
 	pub fn with_group_by_clause(
 		self,
 		group_by_clause: GroupBy<DB>,
-	) -> SelectBuilder<DB, HAS_COLUMNS, true, HAS_ORDER_BY, HAS_JOIN> {
+	) -> SelectBuilder<DB, HAS_COLUMNS, true, HAS_HAVING, HAS_ORDER_BY, HAS_JOIN> {
 		SelectBuilder {
 			from_clause: self.from_clause,
 			select_columns: self.select_columns,
@@ -552,13 +586,13 @@ impl<DB: Database, const HAS_COLUMNS: bool, const HAS_ORDER_BY: bool, const HAS_
 	}
 }
 
-impl<DB: Database, const HAS_COLUMNS: bool, const HAS_ORDER_BY: bool>
-	SelectBuilder<DB, HAS_COLUMNS, false, HAS_ORDER_BY, false>
+impl<DB: Database, const HAS_COLUMNS: bool, const HAS_HAVING: bool, const HAS_ORDER_BY: bool>
+	SelectBuilder<DB, HAS_COLUMNS, false, HAS_HAVING, HAS_ORDER_BY, false>
 {
 	pub fn group_by<S: IntoIterator<Item = Col>, Col: Into<String>>(
 		self,
 		predicates: S,
-	) -> SelectBuilder<DB, HAS_COLUMNS, true, HAS_ORDER_BY, false> {
+	) -> SelectBuilder<DB, HAS_COLUMNS, true, HAS_HAVING, HAS_ORDER_BY, false> {
 		SelectBuilder {
 			from_clause: self.from_clause,
 			select_columns: self.select_columns,
@@ -570,7 +604,7 @@ impl<DB: Database, const HAS_COLUMNS: bool, const HAS_ORDER_BY: bool>
 	}
 }
 
-// https://github.com/mikecaines/ursid-sqlx/issues/1
+// can't impl this due to conflicting with core
 /*impl<DB: Database, const HAS_COLUMNS: bool, const HAS_ORDER_BY: bool>
 	SelectBuilder<DB, HAS_COLUMNS, false, HAS_ORDER_BY, true>
 {
@@ -589,8 +623,13 @@ impl<DB: Database, const HAS_COLUMNS: bool, const HAS_ORDER_BY: bool>
 	}
 }*/
 
-impl<DB: Database, const HAS_ORDER_BY: bool, const HAS_GROUP_BY: bool, const HAS_JOIN: bool>
-	SelectBuilder<DB, true, HAS_GROUP_BY, HAS_ORDER_BY, HAS_JOIN>
+impl<
+		DB: Database,
+		const HAS_ORDER_BY: bool,
+		const HAS_GROUP_BY: bool,
+		const HAS_HAVING: bool,
+		const HAS_JOIN: bool,
+	> SelectBuilder<DB, true, HAS_GROUP_BY, HAS_HAVING, HAS_ORDER_BY, HAS_JOIN>
 {
 	pub fn finalize(self) -> Result<Select<DB>, SyntaxError> {
 		if self.select_columns.is_empty() {

@@ -1,6 +1,6 @@
 use crate::tests::compare_sql;
 use crate::value::Value;
-use crate::{sql_lang, Database, IntoSql, Sql, SyntaxError};
+use crate::{sql_lang, Database, IntoSql, IntoSqlValue, Sql, SyntaxError};
 
 fn test<DB: Database>(
 	target_text: &str,
@@ -16,6 +16,11 @@ where
 				.group_by_column("col2")
 				.finalize()?,
 		)
+		.with_having_clause(
+			sql_lang::clause::Having::build()
+				.column_equal_to("foo", 1u32)
+				.finalize()?,
+		)
 		.finalize()?
 		.into_sql();
 
@@ -27,7 +32,10 @@ where
 fn postgres() -> Result<(), SyntaxError> {
 	type DB = sqlx::Postgres;
 
-	test::<DB>(r#"select "col1" from "some_table" group by "col2""#, &[])
+	test::<DB>(
+		r#"select "col1" from "some_table" group by "col2" having "foo"=$1"#,
+		&[1u32.into_sql_value()],
+	)
 }
 
 #[test]
@@ -35,5 +43,8 @@ fn postgres() -> Result<(), SyntaxError> {
 fn mysql() -> Result<(), SyntaxError> {
 	type DB = sqlx::MySql;
 
-	test::<DB>("select `col1` from `some_table` group by `col2`", &[])
+	test::<DB>(
+		"select `col1` from `some_table` group by `col2` having `foo`=?",
+		&[1u32.into_sql_value()],
+	)
 }
