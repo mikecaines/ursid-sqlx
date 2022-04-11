@@ -51,7 +51,7 @@
 //! ## Using the CRUD features
 //!
 //! ### Updating one or more rows
-//! ```
+//! ```rust
 //! # use sqlx::{MySql, Pool};
 //! # use sqlx::pool::PoolOptions;
 //! use ursid_sqlx::BuilderHelper;
@@ -79,7 +79,7 @@
 //! 	exists to specify more complex WHERE conditions.
 //!
 //! ### Replacing a single, uniquely identifiable, row (insert or update automatically)
-//! ```
+//! ```rust
 //! # use sqlx::{MySql, Pool};
 //! # use sqlx::pool::PoolOptions;
 //! use ursid_sqlx::BuilderHelper;
@@ -108,7 +108,7 @@
 //! ## Using the builders for SQL statements, clauses, etc.
 //!
 //! ### Building a simple SELECT statement
-//! ```
+//! ```rust
 //! # use sqlx::{MySql, Pool};
 //! # use sqlx::pool::PoolOptions;
 //! use ursid_sqlx::{query, BuilderHelper};
@@ -142,7 +142,7 @@
 //! - This SELECT includes a join in the FROM clause, and a more complex WHERE clause.
 //! - Note that the `select_column()` methods, etc. now require both a table and column reference,
 //!   due to the use of a join.
-//! ```
+//! ```rust
 //! # use sqlx::{MySql, Pool};
 //! # use sqlx::pool::PoolOptions;
 //! use ursid_sqlx::sql_lang::clause::{SqlFrom, Where};
@@ -198,7 +198,7 @@
 //!   arbitrary expressions, such as `SelectBuilder::select_expression()` in the example below.
 //!
 //! ### Using an arbitrary expression in a SELECT statement
-//! ```
+//! ```rust
 //! # use sqlx::{MySql, Pool};
 //! # use sqlx::pool::PoolOptions;
 //! use ursid_sqlx::{query, BuilderHelper};
