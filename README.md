@@ -22,7 +22,7 @@ The name `URSID` comes from: Update, Replace, Select, Insert, Delete.
   These can be used to compose arbitrary SQL expressions & grammar.
 - An `Sql` type, that all the API's produce, which safely manages the coupling of
   the text & values components of a parameterized query.
-- `Sql` "fragments" can also be concatenated together similar to Strings.
+- These `Sql` "fragments" can also be concatenated together similar to Strings.
 - Functions such as `query()`, `query_as()`, etc., just like in `sqlx`, but work with the
   `Sql` type.
 
