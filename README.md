@@ -63,10 +63,10 @@ db.build_crud()
 	.await?;
 ```
 
-- insert_row(), delete_rows()
+- `insert_row()`, `delete_rows()`
   work in a similar manner.
 - The method
-	with_where_clause()
+	`with_where_clause()`
 	exists to specify more complex WHERE conditions.
 
 #### Replacing a single, uniquely identifiable, row (insert or update automatically)
@@ -207,10 +207,10 @@ let _rows = query(&mut sql)?.fetch_all(&db).await?;
 
 - The `concat()` and `coalesce()` `fn`'s in the example above, are just normal rust functions
   that mirror the corresponding SQL function.
-- They leverage the [IntoSql] trait to safely accept arbitrary values as arguments.
+- They leverage the `IntoSql` trait to safely accept arbitrary values as arguments.
 - Simple argument values are safely integrated into the generated SQL as parameter bindings.
 - The fn's return various "AST" types, which can be converted into the
-  Sql
+  `Sql`
   type, just like the output of the various builders, etc.
 
 

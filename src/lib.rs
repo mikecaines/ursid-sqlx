@@ -244,7 +244,7 @@
 //!
 //! - The `concat()` and `coalesce()` `fn`'s in the example above, are just normal rust functions
 //!   that mirror the corresponding SQL function.
-//! - They leverage the [IntoSql] trait to safely accept arbitrary values as arguments.
+//! - They leverage the [IntoSql](crate::sql_lang::IntoSql) trait to safely accept arbitrary values as arguments.
 //! - Simple argument values are safely integrated into the generated SQL as parameter bindings.
 //! - The fn's return various "AST" types, which can be converted into the
 //!   [Sql](crate::sql_lang::Sql)
