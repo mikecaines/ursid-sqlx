@@ -1,4 +1,4 @@
-# ursid-sqlx
+# `ursid_sqlx`
 Utilities for SQL to execute CRUD-like operations, safely build dynamic queries,
 and more. Based on the [`sqlx`](https://crates.io/crates/sqlx) crate.
 
@@ -49,7 +49,7 @@ The name `URSID` comes from: Update, Replace, Select, Insert, Delete.
 ### Using the CRUD features
 
 #### Updating one or more rows
-```
+```rust
 use ursid_sqlx::BuilderHelper;
 
 let db: Pool<MySql> = PoolOptions::new().connect("...").await?;
@@ -70,7 +70,7 @@ db.build_crud()
 	exists to specify more complex WHERE conditions.
 
 #### Replacing a single, uniquely identifiable, row (insert or update automatically)
-```
+```rust
 use ursid_sqlx::BuilderHelper;
 
 let db: Pool<MySql> = PoolOptions::new().connect("...").await?;
@@ -92,7 +92,7 @@ transaction.commit().await?;
 ### Using the builders for SQL statements, clauses, etc.
 
 #### Building a simple SELECT statement
-```
+```rust
 use ursid_sqlx::{query, BuilderHelper};
 
 let db: Pool<MySql> = PoolOptions::new().connect("...").await?;
@@ -119,7 +119,7 @@ let _rows = query(&mut sql)?.fetch_all(&db).await?;
 - This SELECT includes a join in the FROM clause, and a more complex WHERE clause.
 - Note that the `select_column()` methods, etc. now require both a table and column reference,
   due to the use of a join.
-```
+```rust
 use ursid_sqlx::sql_lang::clause::{SqlFrom, Where};
 use ursid_sqlx::{query, BuilderHelper, IntoRawSql};
 
@@ -138,11 +138,11 @@ let mut sql = db
 	.select_column("u", "name")
 	.select_column_with_alias("e", "start_date", "employee_date")
 	.where_clause(|clause| {
- 		clause
- 			.column_equal_to("u", "username", "some_user")
- 			.and_column_equal_to("e", "is_active", 1)
- 			.and_column_in("e", "foo_id", [1, 2, 3])
- 	})
+		clause
+			.column_equal_to("u", "username", "some_user")
+			.and_column_equal_to("e", "is_active", 1)
+			.and_column_in("e", "foo_id", [1, 2, 3])
+	})
 	.finalize_and_freeze()?;
 
 assert_eq!(
@@ -168,7 +168,7 @@ let _rows = query(&mut sql)?.fetch_all(&db).await?;
   arbitrary expressions, such as `SelectBuilder::select_expression()` in the example below.
 
 #### Using an arbitrary expression in a SELECT statement
-```
+```rust
 use ursid_sqlx::{query, BuilderHelper};
 
 let db: Pool<MySql> = PoolOptions::new().connect("...").await?;
@@ -210,7 +210,7 @@ let _rows = query(&mut sql)?.fetch_all(&db).await?;
 - They leverage the [IntoSql] trait to safely accept arbitrary values as arguments.
 - Simple argument values are safely integrated into the generated SQL as parameter bindings.
 - The fn's return various "AST" types, which can be converted into the
-  `Sql`
+  Sql
   type, just like the output of the various builders, etc.
 
 
