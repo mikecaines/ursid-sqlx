@@ -72,7 +72,7 @@
 //! # }
 //! ```
 //!
-//! - [insert_row()](crate::crud::insert_row()), [delete_rows()](crate::crud::delete_rows())
+//! - [insert_row()](crate::crud::insert_row), [delete_rows()](crate::crud::delete_rows)
 //!   work in a similar manner.
 //! - The method
 //! 	[with_where_clause()](crate::crud::update::UpdateBuilder::with_where_clause)
