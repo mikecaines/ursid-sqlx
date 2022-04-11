@@ -1,6 +1,7 @@
 use crate::error::{SyntaxError, SyntaxErrorKind};
+use crate::sql_lang::clause::having::HavingBuilder;
 use crate::sql_lang::clause::sql_where::WhereBuilder;
-use crate::sql_lang::clause::{GroupBy, OrderBy, SqlFrom, Where};
+use crate::sql_lang::clause::{GroupBy, Having, OrderBy, SqlFrom, Where};
 use crate::sql_lang::expression::{ColumnReference, TableAndColumnReference};
 use crate::sql_lang::{ColRef, Sql};
 use crate::value::IntoSqlValue;
@@ -213,6 +214,46 @@ impl<DB: Database, const HAS_COLUMNS: bool, const HAS_ORDER_BY: bool, const HAS_
 			having_clause_builder: self.having_clause_builder,
 			order_by_clause: self.order_by_clause,
 		}
+	}
+}
+
+impl<DB: Database, const HAS_COLUMNS: bool, const HAS_ORDER_BY: bool>
+	SelectBuilder<DB, HAS_COLUMNS, true, false, HAS_ORDER_BY, false>
+{
+	pub fn having_clause<
+		F: FnOnce(HavingBuilder<DB, false, false>) -> HavingBuilder<DB, true, false>,
+	>(
+		mut self,
+		build: F,
+	) -> Self {
+		let clause = build(Having::build());
+		self.having_clause_builder = Some(if let Some(builder) = self.having_clause_builder {
+			builder.merge_with_builder(clause)
+		} else {
+			clause
+		});
+
+		self
+	}
+}
+
+impl<DB: Database, const HAS_COLUMNS: bool, const HAS_ORDER_BY: bool>
+	SelectBuilder<DB, HAS_COLUMNS, true, false, HAS_ORDER_BY, true>
+{
+	pub fn having_clause<
+		F: FnOnce(HavingBuilder<DB, false, true>) -> HavingBuilder<DB, true, true>,
+	>(
+		mut self,
+		build: F,
+	) -> Self {
+		let clause = build(Having::build_with_join());
+		self.having_clause_builder = Some(if let Some(builder) = self.having_clause_builder {
+			builder.merge_with_builder(clause)
+		} else {
+			clause
+		});
+
+		self
 	}
 }
 
