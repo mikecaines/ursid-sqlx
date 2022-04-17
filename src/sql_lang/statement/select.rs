@@ -645,14 +645,14 @@ impl<DB: Database, const HAS_COLUMNS: bool, const HAS_HAVING: bool, const HAS_OR
 	}
 }
 
-// can't impl this due to conflicting with core
-/*impl<DB: Database, const HAS_COLUMNS: bool, const HAS_ORDER_BY: bool>
-	SelectBuilder<DB, HAS_COLUMNS, false, HAS_ORDER_BY, true>
+// see: https://github.com/mikecaines/ursid-sqlx/issues/12
+/*impl<DB: Database, const HAS_COLUMNS: bool, const HAS_HAVING: bool, const HAS_ORDER_BY: bool>
+	SelectBuilder<DB, HAS_COLUMNS, false, HAS_HAVING, HAS_ORDER_BY, true>
 {
 	pub fn group_by<S: IntoIterator<Item = (Tab, Col)>, Tab: Into<String>, Col: Into<String>>(
 		self,
 		predicates: S,
-	) -> SelectBuilder<DB, HAS_COLUMNS, true, HAS_ORDER_BY, true> {
+	) -> SelectBuilder<DB, HAS_COLUMNS, true, HAS_HAVING, HAS_ORDER_BY, true> {
 		SelectBuilder {
 			from_clause: self.from_clause,
 			select_columns: self.select_columns,

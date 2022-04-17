@@ -37,7 +37,7 @@ impl<DB: Database, Col: Into<String>> TryFrom<Vec<Col>> for GroupBy<DB> {
 	}
 }
 
-// https://github.com/mikecaines/ursid-sqlx/issues/1
+// see: https://github.com/mikecaines/ursid-sqlx/issues/12
 /*
 impl<DB: Database, Tab: Into<String>, Col: Into<String>, const LEN: usize>
 	TryFrom<[(Tab, Col); LEN]> for GroupBy<DB>
