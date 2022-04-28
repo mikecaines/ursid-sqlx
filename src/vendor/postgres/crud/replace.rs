@@ -86,6 +86,7 @@ pub async fn execute(
 				Some(
 					modifications.fold(
 						sql_lang::statement::Update::build(builder.table_name)
+							.with_where_clause(where_clause)
 							.update_column(modification.name, modification.value),
 						|update_builder, modification| {
 							update_builder.update_column(modification.name, modification.value)
