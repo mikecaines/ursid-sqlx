@@ -33,6 +33,12 @@ impl<DB: Database> SqlHelper<DB> {
 			database: PhantomData,
 		}
 	}
+
+	pub fn clause(&self) -> SqlClauseHelper<DB> {
+		SqlClauseHelper {
+			database: PhantomData,
+		}
+	}
 }
 
 pub struct SqlStatementHelper<DB: Database> {
@@ -73,6 +79,22 @@ impl<DB: Database> SqlStatementHelper<DB> {
 		table_name: N,
 	) -> sql_lang::statement::delete::DeleteBuilder<DB> {
 		sql_lang::statement::Delete::build(table_name)
+	}
+}
+
+pub struct SqlClauseHelper<DB: Database> {
+	database: PhantomData<DB>,
+}
+
+impl<DB: Database> SqlClauseHelper<DB> {
+	pub fn sql_where(&self) -> sql_lang::clause::sql_where::WhereBuilder<DB, false, false> {
+		sql_lang::clause::sql_where::Where::build()
+	}
+
+	pub fn sql_where_with_join(
+		&self,
+	) -> sql_lang::clause::sql_where::WhereBuilder<DB, false, true> {
+		sql_lang::clause::sql_where::Where::build_with_join()
 	}
 }
 
