@@ -172,6 +172,39 @@ impl<DB: Database> From<Vec<u8>> for Sql<DB> {
 	}
 }
 
+#[cfg(feature = "chrono-datetime")]
+mod chrono {
+	use crate::{Database, Sql};
+	use chrono::{NaiveDate, NaiveDateTime, NaiveTime};
+
+	impl<DB: Database> From<NaiveDateTime> for Sql<DB> {
+		fn from(value: NaiveDateTime) -> Self {
+			Sql::new(
+				DB::sql_value_placeholder(),
+				vec![DB::value_from_chrono_native_datetime(value)],
+			)
+		}
+	}
+
+	impl<DB: Database> From<NaiveDate> for Sql<DB> {
+		fn from(value: NaiveDate) -> Self {
+			Sql::new(
+				DB::sql_value_placeholder(),
+				vec![DB::value_from_chrono_native_date(value)],
+			)
+		}
+	}
+
+	impl<DB: Database> From<NaiveTime> for Sql<DB> {
+		fn from(value: NaiveTime) -> Self {
+			Sql::new(
+				DB::sql_value_placeholder(),
+				vec![DB::value_from_chrono_native_time(value)],
+			)
+		}
+	}
+}
+
 /// Blanket conversion from Option<T:IntoSqlValue>
 impl<DB: Database, T: IntoSqlValue<DB>> From<Option<T>> for Sql<DB> {
 	fn from(value: Option<T>) -> Self {
