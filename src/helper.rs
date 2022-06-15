@@ -23,6 +23,8 @@ impl<DB: Database> BuilderHelper<DB> for sqlx::Pool<DB> {}
 
 impl<'c, DB: Database> BuilderHelper<DB> for sqlx::Transaction<'c, DB> {}
 
+impl<DB: Database> BuilderHelper<DB> for &mut DB::Connection {}
+
 pub struct SqlHelper<DB: Database> {
 	database: PhantomData<DB>,
 }
