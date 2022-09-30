@@ -242,6 +242,32 @@ impl<DB: Database, const MODE: char> WhereLikeBuilder<DB, MODE, false, false> {
 		}
 	}
 
+	pub fn column_is_null<N: Into<String>>(
+		mut self,
+		name: N,
+		is_null: bool,
+	) -> WhereLikeBuilder<DB, MODE, true, false> {
+		self.predicates.push((
+			LogicalOp::And,
+			PredicateKind::Expression(
+				{
+					use sql_lang::expression::*;
+
+					if is_null {
+						ColumnReference::new(name.into()).is_null()
+					} else {
+						ColumnReference::new(name.into()).is_not_null()
+					}
+				}
+				.into(),
+			),
+		));
+
+		WhereLikeBuilder {
+			predicates: self.predicates,
+		}
+	}
+
 	pub fn column_in<N: Into<String>, I: Into<sql_lang::clause::In<DB>>>(
 		mut self,
 		name: N,
@@ -280,6 +306,34 @@ impl<DB: Database, const MODE: char> WhereLikeBuilder<DB, MODE, false, true> {
 				},
 				value.into_sql_value(),
 			)),
+		));
+
+		WhereLikeBuilder {
+			predicates: self.predicates,
+		}
+	}
+
+	pub fn column_is_null<T: Into<String>, C: Into<String>>(
+		mut self,
+		table_name: T,
+		column_name: C,
+		is_null: bool,
+	) -> WhereLikeBuilder<DB, MODE, true, true> {
+		self.predicates.push((
+			LogicalOp::And,
+			PredicateKind::Expression(
+				{
+					use sql_lang::expression::*;
+
+					if is_null {
+						ColumnReference::with_table(table_name.into(), column_name.into()).is_null()
+					} else {
+						ColumnReference::with_table(table_name.into(), column_name.into())
+							.is_not_null()
+					}
+				}
+				.into(),
+			),
 		));
 
 		WhereLikeBuilder {
@@ -346,6 +400,58 @@ impl<DB: Database, const MODE: char> WhereLikeBuilder<DB, MODE, true, false> {
 				},
 				value.into_sql_value(),
 			)),
+		));
+
+		WhereLikeBuilder {
+			predicates: self.predicates,
+		}
+	}
+
+	pub fn and_column_is_null<N: Into<String>>(
+		mut self,
+		name: N,
+		is_null: bool,
+	) -> WhereLikeBuilder<DB, MODE, true, false> {
+		self.predicates.push((
+			LogicalOp::And,
+			PredicateKind::Expression(
+				{
+					use sql_lang::expression::*;
+
+					if is_null {
+						ColumnReference::new(name.into()).is_null()
+					} else {
+						ColumnReference::new(name.into()).is_not_null()
+					}
+				}
+				.into(),
+			),
+		));
+
+		WhereLikeBuilder {
+			predicates: self.predicates,
+		}
+	}
+
+	pub fn or_column_is_null<N: Into<String>>(
+		mut self,
+		name: N,
+		is_null: bool,
+	) -> WhereLikeBuilder<DB, MODE, true, false> {
+		self.predicates.push((
+			LogicalOp::Or,
+			PredicateKind::Expression(
+				{
+					use sql_lang::expression::*;
+
+					if is_null {
+						ColumnReference::new(name.into()).is_null()
+					} else {
+						ColumnReference::new(name.into()).is_not_null()
+					}
+				}
+				.into(),
+			),
 		));
 
 		WhereLikeBuilder {
@@ -434,6 +540,62 @@ impl<DB: Database, const MODE: char> WhereLikeBuilder<DB, MODE, true, true> {
 				},
 				value.into_sql_value(),
 			)),
+		));
+
+		WhereLikeBuilder {
+			predicates: self.predicates,
+		}
+	}
+
+	pub fn and_column_is_null<T: Into<String>, C: Into<String>>(
+		mut self,
+		table_name: T,
+		column_name: C,
+		is_null: bool,
+	) -> WhereLikeBuilder<DB, MODE, true, true> {
+		self.predicates.push((
+			LogicalOp::And,
+			PredicateKind::Expression(
+				{
+					use sql_lang::expression::*;
+
+					if is_null {
+						ColumnReference::with_table(table_name.into(), column_name.into()).is_null()
+					} else {
+						ColumnReference::with_table(table_name.into(), column_name.into())
+							.is_not_null()
+					}
+				}
+				.into(),
+			),
+		));
+
+		WhereLikeBuilder {
+			predicates: self.predicates,
+		}
+	}
+
+	pub fn or_column_is_null<T: Into<String>, C: Into<String>>(
+		mut self,
+		table_name: T,
+		column_name: C,
+		is_null: bool,
+	) -> WhereLikeBuilder<DB, MODE, true, true> {
+		self.predicates.push((
+			LogicalOp::Or,
+			PredicateKind::Expression(
+				{
+					use sql_lang::expression::*;
+
+					if is_null {
+						ColumnReference::with_table(table_name.into(), column_name.into()).is_null()
+					} else {
+						ColumnReference::with_table(table_name.into(), column_name.into())
+							.is_not_null()
+					}
+				}
+				.into(),
+			),
 		));
 
 		WhereLikeBuilder {
