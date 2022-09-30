@@ -42,6 +42,34 @@ impl<DB: Database> SqlOnBuilder<DB, false> {
 	}
 }
 
+impl<DB: Database> SqlOnBuilder<DB, true> {
+	pub fn and_fk<
+		FkTab: Into<String>,
+		FkCol: Into<String>,
+		PkTab: Into<String>,
+		PkCol: Into<String>,
+	>(
+		self,
+		fk_table_name: FkTab,
+		fk_column_name: FkCol,
+		pk_table_name: PkTab,
+		pk_column_name: PkCol,
+	) -> SqlOnBuilder<DB, true>
+	where
+		Sql<DB>:
+			From<ComparisonCombo<DB, TableAndColumnReference<DB>, TableAndColumnReference<DB>>>,
+		Sql<DB>: From<TableAndColumnReference<DB>>,
+	{
+		self.and_expression({
+			use crate::sql_lang::expression::prelude::*;
+
+			ColumnReference::with_table(fk_table_name, fk_column_name)
+				.equal_to(ColumnReference::with_table(pk_table_name, pk_column_name))
+				.into_sql()
+		})
+	}
+}
+
 impl<
 		DB: Database,
 		FkTab: Into<String>,
