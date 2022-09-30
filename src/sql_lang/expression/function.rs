@@ -84,6 +84,10 @@ pub fn max<DB: Database, E: Into<Sql<DB>>>(expr: E) -> ast::Max<DB> {
 	ast::Max { expr: expr.into() }
 }
 
+pub fn abs<DB: Database, E: Into<Sql<DB>>>(expr: E) -> ast::Abs<DB> {
+	ast::Abs { expr: expr.into() }
+}
+
 pub mod ast {
 	use crate::sql_lang::Sql;
 	use crate::{Database, IntoRawSql};
@@ -208,6 +212,20 @@ pub mod ast {
 			let Max { expr } = ast;
 
 			IntoRawSql::<DB>::into_raw_sql("max(")
+				.append(expr)
+				.raw_append(")")
+		}
+	}
+
+	pub struct Abs<DB: Database> {
+		pub(crate) expr: Sql<DB>,
+	}
+
+	impl<DB: Database> From<Abs<DB>> for Sql<DB> {
+		fn from(ast: Abs<DB>) -> Self {
+			let Abs { expr } = ast;
+
+			IntoRawSql::<DB>::into_raw_sql("abs(")
 				.append(expr)
 				.raw_append(")")
 		}

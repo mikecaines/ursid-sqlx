@@ -2,7 +2,7 @@ use crate::sql_lang::expression::grammar::{IsNull, LogicalCombo};
 use crate::sql_lang::Sql;
 use crate::Database;
 pub use function::{
-	coalesce, coalesce3, concat, concat3, count, current_datetime, day_diff, lower, max, min,
+	abs, coalesce, coalesce3, concat, concat3, count, current_datetime, day_diff, lower, max, min,
 	minute_diff,
 };
 pub use grammar::{ComparisonOp, LogicalNot, LogicalOp, Parenthesis};
