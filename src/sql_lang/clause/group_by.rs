@@ -133,7 +133,7 @@ impl<DB: Database, const HAS_PREDICATES: bool> GroupByBuilder<DB, HAS_PREDICATES
 		mut self,
 		table_name: T,
 		column_name: C,
-	) -> GroupByBuilder<DB, true, false> {
+	) -> GroupByBuilder<DB, true, true> {
 		self.predicates.push(PredicateKind::TableAndColumn(
 			table_name.into(),
 			column_name.into(),
