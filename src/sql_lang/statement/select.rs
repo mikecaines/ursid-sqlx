@@ -509,6 +509,42 @@ impl<
 		}
 	}
 
+	/// Generates a column alias from the table (or table alias) name.
+	/// e.g. Selecting column "foo" from table "b", results in "SELECT b.foo as b_foo".
+	/// This is useful to disambiguate columns across multiple tables in a JOIN.
+	pub fn select_columns_prefixed<
+		T: Into<String>,
+		C: Into<String>,
+		S: IntoIterator<Item = (T, C)>,
+	>(
+		mut self,
+		pairs: S,
+	) -> SelectBuilder<DB, true, HAS_GROUP_BY, HAS_HAVING, HAS_ORDER_BY, true> {
+		for (table_name, column_name) in pairs.into_iter() {
+			let table_name = table_name.into();
+			let column_name = column_name.into();
+			let alias = format!("{}_{}", &table_name, &column_name);
+
+			self.select_columns
+				.push(SelectPredicateKind::Column(SelectedColumn {
+					column: ColRef {
+						table_name: Some(table_name),
+						column_name,
+					},
+					alias: Some(alias),
+				}));
+		}
+
+		SelectBuilder {
+			from_clause: self.from_clause,
+			select_columns: self.select_columns,
+			where_clause_builder: self.where_clause_builder,
+			group_by_clause: self.group_by_clause,
+			having_clause_builder: self.having_clause_builder,
+			order_by_clause: self.order_by_clause,
+		}
+	}
+
 	pub fn where_column_equal_to<T: Into<String>, C: Into<String>, V: IntoSqlValue<DB>>(
 		mut self,
 		table_name: T,
