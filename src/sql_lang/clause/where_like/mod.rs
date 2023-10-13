@@ -1,9 +1,9 @@
 use crate::error::SyntaxError;
 pub(crate) use crate::sql_lang::expression::grammar::LogicalOp;
-use crate::sql_lang::expression::{ColumnReference, TableAndColumnReference};
+use crate::sql_lang::expression::{ColumnReference, LogicalNot, TableAndColumnReference};
 use crate::sql_lang::{ColRef, Sql};
 use crate::value::IntoSqlValue;
-use crate::{sql_lang, Database, IntoRawSql};
+use crate::{sql_lang, Database, IntoRawSql, IntoSql};
 pub(crate) use predicate::PredicateKind;
 
 mod predicate;
@@ -288,6 +288,28 @@ impl<DB: Database, const MODE: char> WhereLikeBuilder<DB, MODE, false, false> {
 			predicates: self.predicates,
 		}
 	}
+
+	pub fn column_not_in<N: Into<String>, I: Into<sql_lang::clause::In<DB>>>(
+		mut self,
+		name: N,
+		sql_in_clause: I,
+	) -> WhereLikeBuilder<DB, MODE, true, false> {
+		self.predicates.push((
+			LogicalOp::And,
+			PredicateKind::Expression(
+				LogicalNot::new(
+					ColumnReference::new(name.into())
+						.into_sql()
+						.append(sql_in_clause.into()),
+				)
+				.into_sql(),
+			),
+		));
+
+		WhereLikeBuilder {
+			predicates: self.predicates,
+		}
+	}
 }
 
 impl<DB: Database, const MODE: char> WhereLikeBuilder<DB, MODE, false, true> {
@@ -356,6 +378,29 @@ impl<DB: Database, const MODE: char> WhereLikeBuilder<DB, MODE, false, true> {
 				},
 				sql_in_clause.into(),
 			)),
+		));
+
+		WhereLikeBuilder {
+			predicates: self.predicates,
+		}
+	}
+
+	pub fn column_not_in<T: Into<String>, C: Into<String>, I: Into<sql_lang::clause::In<DB>>>(
+		mut self,
+		table_name: T,
+		column_name: C,
+		sql_in_clause: I,
+	) -> WhereLikeBuilder<DB, MODE, true, true> {
+		self.predicates.push((
+			LogicalOp::And,
+			PredicateKind::Expression(
+				LogicalNot::new(
+					ColumnReference::with_table(table_name.into(), column_name.into())
+						.into_sql()
+						.append(sql_in_clause.into()),
+				)
+				.into_sql(),
+			),
 		));
 
 		WhereLikeBuilder {
@@ -480,6 +525,28 @@ impl<DB: Database, const MODE: char> WhereLikeBuilder<DB, MODE, true, false> {
 		}
 	}
 
+	pub fn and_column_not_in<N: Into<String>, I: Into<sql_lang::clause::In<DB>>>(
+		mut self,
+		name: N,
+		sql_in_clause: I,
+	) -> WhereLikeBuilder<DB, MODE, true, false> {
+		self.predicates.push((
+			LogicalOp::And,
+			PredicateKind::Expression(
+				LogicalNot::new(
+					ColumnReference::new(name.into())
+						.into_sql()
+						.append(sql_in_clause.into()),
+				)
+				.into_sql(),
+			),
+		));
+
+		WhereLikeBuilder {
+			predicates: self.predicates,
+		}
+	}
+
 	pub fn or_column_in<N: Into<String>, I: Into<sql_lang::clause::In<DB>>>(
 		mut self,
 		name: N,
@@ -494,6 +561,28 @@ impl<DB: Database, const MODE: char> WhereLikeBuilder<DB, MODE, true, false> {
 				},
 				sql_in_clause.into(),
 			)),
+		));
+
+		WhereLikeBuilder {
+			predicates: self.predicates,
+		}
+	}
+
+	pub fn or_column_not_in<N: Into<String>, I: Into<sql_lang::clause::In<DB>>>(
+		mut self,
+		name: N,
+		sql_in_clause: I,
+	) -> WhereLikeBuilder<DB, MODE, true, false> {
+		self.predicates.push((
+			LogicalOp::Or,
+			PredicateKind::Expression(
+				LogicalNot::new(
+					ColumnReference::new(name.into())
+						.into_sql()
+						.append(sql_in_clause.into()),
+				)
+				.into_sql(),
+			),
 		));
 
 		WhereLikeBuilder {
@@ -625,6 +714,33 @@ impl<DB: Database, const MODE: char> WhereLikeBuilder<DB, MODE, true, true> {
 		}
 	}
 
+	pub fn and_column_not_in<
+		T: Into<String>,
+		C: Into<String>,
+		I: Into<sql_lang::clause::In<DB>>,
+	>(
+		mut self,
+		table_name: T,
+		column_name: C,
+		sql_in_clause: I,
+	) -> WhereLikeBuilder<DB, MODE, true, true> {
+		self.predicates.push((
+			LogicalOp::And,
+			PredicateKind::Expression(
+				LogicalNot::new(
+					ColumnReference::with_table(table_name.into(), column_name.into())
+						.into_sql()
+						.append(sql_in_clause.into()),
+				)
+				.into_sql(),
+			),
+		));
+
+		WhereLikeBuilder {
+			predicates: self.predicates,
+		}
+	}
+
 	pub fn or_column_in<T: Into<String>, C: Into<String>, I: Into<sql_lang::clause::In<DB>>>(
 		mut self,
 		table_name: T,
@@ -640,6 +756,29 @@ impl<DB: Database, const MODE: char> WhereLikeBuilder<DB, MODE, true, true> {
 				},
 				sql_in_clause.into(),
 			)),
+		));
+
+		WhereLikeBuilder {
+			predicates: self.predicates,
+		}
+	}
+
+	pub fn or_column_not_in<T: Into<String>, C: Into<String>, I: Into<sql_lang::clause::In<DB>>>(
+		mut self,
+		table_name: T,
+		column_name: C,
+		sql_in_clause: I,
+	) -> WhereLikeBuilder<DB, MODE, true, true> {
+		self.predicates.push((
+			LogicalOp::Or,
+			PredicateKind::Expression(
+				LogicalNot::new(
+					ColumnReference::with_table(table_name.into(), column_name.into())
+						.into_sql()
+						.append(sql_in_clause.into()),
+				)
+				.into_sql(),
+			),
 		));
 
 		WhereLikeBuilder {
