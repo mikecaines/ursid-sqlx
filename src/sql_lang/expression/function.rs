@@ -76,6 +76,10 @@ pub fn count<DB: Database, E: Into<Sql<DB>>>(expr: E) -> ast::Count<DB> {
 	ast::Count { expr: expr.into() }
 }
 
+pub fn count_distinct<DB: Database, E: Into<Sql<DB>>>(expr: E) -> ast::CountDistinct<DB> {
+	ast::CountDistinct { expr: expr.into() }
+}
+
 pub fn min<DB: Database, E: Into<Sql<DB>>>(expr: E) -> ast::Min<DB> {
 	ast::Min { expr: expr.into() }
 }
@@ -184,6 +188,20 @@ pub mod ast {
 			let Count { expr } = ast;
 
 			IntoRawSql::<DB>::into_raw_sql("count(")
+				.append(expr)
+				.raw_append(")")
+		}
+	}
+
+	pub struct CountDistinct<DB: Database> {
+		pub(crate) expr: Sql<DB>,
+	}
+
+	impl<DB: Database> From<CountDistinct<DB>> for Sql<DB> {
+		fn from(ast: CountDistinct<DB>) -> Self {
+			let CountDistinct { expr } = ast;
+
+			IntoRawSql::<DB>::into_raw_sql("count(distinct ")
 				.append(expr)
 				.raw_append(")")
 		}
