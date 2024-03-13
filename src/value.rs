@@ -196,7 +196,6 @@ pub(crate) enum ValueLogicalKind {
 	I64,
 	F32,
 	F64,
-	Decimal,
 	Datetime,
 	Date,
 	Time,
