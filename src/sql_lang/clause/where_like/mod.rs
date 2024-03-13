@@ -1,6 +1,8 @@
 use crate::error::SyntaxError;
 pub(crate) use crate::sql_lang::expression::grammar::LogicalOp;
-use crate::sql_lang::expression::{ColumnReference, LogicalNot, TableAndColumnReference};
+use crate::sql_lang::expression::{
+	ColumnReference, LogicalNot, SqlExpression, TableAndColumnReference,
+};
 use crate::sql_lang::{ColRef, Sql};
 use crate::value::IntoSqlValue;
 use crate::{sql_lang, Database, IntoRawSql, IntoSql};
@@ -242,6 +244,25 @@ impl<DB: Database, const MODE: char> WhereLikeBuilder<DB, MODE, false, false> {
 		}
 	}
 
+	pub fn column_not_equal_to<N: Into<String>, V: IntoSqlValue<DB>>(
+		mut self,
+		name: N,
+		value: V,
+	) -> WhereLikeBuilder<DB, MODE, true, false> {
+		self.predicates.push((
+			LogicalOp::And,
+			PredicateKind::Expression(
+				ColumnReference::new(name.into())
+					.not_equal_to(value.into_sql_value())
+					.into_sql(),
+			),
+		));
+
+		WhereLikeBuilder {
+			predicates: self.predicates,
+		}
+	}
+
 	pub fn column_is_null<N: Into<String>>(
 		mut self,
 		name: N,
@@ -328,6 +349,26 @@ impl<DB: Database, const MODE: char> WhereLikeBuilder<DB, MODE, false, true> {
 				},
 				value.into_sql_value(),
 			)),
+		));
+
+		WhereLikeBuilder {
+			predicates: self.predicates,
+		}
+	}
+
+	pub fn column_not_equal_to<T: Into<String>, C: Into<String>, V: IntoSqlValue<DB>>(
+		mut self,
+		table_name: T,
+		column_name: C,
+		value: V,
+	) -> WhereLikeBuilder<DB, MODE, true, true> {
+		self.predicates.push((
+			LogicalOp::And,
+			PredicateKind::Expression(
+				TableAndColumnReference::new(table_name.into(), column_name.into())
+					.not_equal_to(value.into_sql_value())
+					.into_sql(),
+			),
 		));
 
 		WhereLikeBuilder {
@@ -431,6 +472,25 @@ impl<DB: Database, const MODE: char> WhereLikeBuilder<DB, MODE, true, false> {
 		}
 	}
 
+	pub fn and_column_not_equal_to<N: Into<String>, V: IntoSqlValue<DB>>(
+		mut self,
+		name: N,
+		value: V,
+	) -> WhereLikeBuilder<DB, MODE, true, false> {
+		self.predicates.push((
+			LogicalOp::And,
+			PredicateKind::Expression(
+				ColumnReference::new(name.into())
+					.not_equal_to(value.into_sql_value())
+					.into_sql(),
+			),
+		));
+
+		WhereLikeBuilder {
+			predicates: self.predicates,
+		}
+	}
+
 	pub fn or_column_equal_to<N: Into<String>, V: IntoSqlValue<DB>>(
 		mut self,
 		name: N,
@@ -445,6 +505,25 @@ impl<DB: Database, const MODE: char> WhereLikeBuilder<DB, MODE, true, false> {
 				},
 				value.into_sql_value(),
 			)),
+		));
+
+		WhereLikeBuilder {
+			predicates: self.predicates,
+		}
+	}
+
+	pub fn or_column_not_equal_to<N: Into<String>, V: IntoSqlValue<DB>>(
+		mut self,
+		name: N,
+		value: V,
+	) -> WhereLikeBuilder<DB, MODE, true, false> {
+		self.predicates.push((
+			LogicalOp::Or,
+			PredicateKind::Expression(
+				ColumnReference::new(name.into())
+					.not_equal_to(value.into_sql_value())
+					.into_sql(),
+			),
 		));
 
 		WhereLikeBuilder {
@@ -614,6 +693,26 @@ impl<DB: Database, const MODE: char> WhereLikeBuilder<DB, MODE, true, true> {
 		}
 	}
 
+	pub fn and_column_not_equal_to<T: Into<String>, C: Into<String>, V: IntoSqlValue<DB>>(
+		mut self,
+		table_name: T,
+		column_name: C,
+		value: V,
+	) -> WhereLikeBuilder<DB, MODE, true, true> {
+		self.predicates.push((
+			LogicalOp::And,
+			PredicateKind::Expression(
+				TableAndColumnReference::new(table_name.into(), column_name.into())
+					.not_equal_to(value.into_sql_value())
+					.into_sql(),
+			),
+		));
+
+		WhereLikeBuilder {
+			predicates: self.predicates,
+		}
+	}
+
 	pub fn or_column_equal_to<T: Into<String>, C: Into<String>, V: IntoSqlValue<DB>>(
 		mut self,
 		table_name: T,
@@ -629,6 +728,26 @@ impl<DB: Database, const MODE: char> WhereLikeBuilder<DB, MODE, true, true> {
 				},
 				value.into_sql_value(),
 			)),
+		));
+
+		WhereLikeBuilder {
+			predicates: self.predicates,
+		}
+	}
+
+	pub fn or_column_not_equal_to<T: Into<String>, C: Into<String>, V: IntoSqlValue<DB>>(
+		mut self,
+		table_name: T,
+		column_name: C,
+		value: V,
+	) -> WhereLikeBuilder<DB, MODE, true, true> {
+		self.predicates.push((
+			LogicalOp::Or,
+			PredicateKind::Expression(
+				TableAndColumnReference::new(table_name.into(), column_name.into())
+					.not_equal_to(value.into_sql_value())
+					.into_sql(),
+			),
 		));
 
 		WhereLikeBuilder {
