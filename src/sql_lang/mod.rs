@@ -174,8 +174,9 @@ impl<DB: Database> From<Vec<u8>> for Sql<DB> {
 
 #[cfg(feature = "chrono-datetime")]
 mod chrono {
+	use std::fmt::Display;
 	use crate::{Database, Sql};
-	use chrono::{NaiveDate, NaiveDateTime, NaiveTime};
+	use chrono::{DateTime, NaiveDate, NaiveDateTime, NaiveTime, TimeZone};
 
 	impl<DB: Database> From<NaiveDateTime> for Sql<DB> {
 		fn from(value: NaiveDateTime) -> Self {
@@ -203,6 +204,15 @@ mod chrono {
 			)
 		}
 	}
+
+	impl<DB: Database, T> From<DateTime<T>> for Sql<DB> where T: TimeZone, T::Offset: Display {
+		fn from(value: DateTime<T>) -> Self {
+			Sql::new(
+				DB::sql_value_placeholder(),
+				vec![DB::value_from_chrono_datetime(value)],
+			)
+		}
+	}
 }
 
 /// Blanket conversion from Option<T:IntoSqlValue>
@@ -224,8 +234,8 @@ impl<DB: Database, T: IntoSqlValue<DB> + Clone> From<&T> for Sql<DB> {
 
 /// Blanket implementation of IntoSql for any type that implements `Into<Sql>`.
 impl<DB: Database, T> IntoSql<DB> for T
-where
-	T: Into<Sql<DB>>,
+	where
+		T: Into<Sql<DB>>,
 {
 	fn into_sql(self) -> Sql<DB> {
 		self.into()

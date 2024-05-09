@@ -155,6 +155,14 @@ impl crate::vendor::requirements::DatabaseVendor<Postgres> for Postgres {
 		))
 	}
 
+	#[cfg(feature = "chrono-datetime")]
+	fn value_from_chrono_datetime<T>(value: chrono::DateTime<T>) -> Option<Value<Postgres>> where T: chrono::TimeZone, T::Offset: std::fmt::Display {
+		Some(Value::new(
+			ValueLogicalKind::Datetime,
+			PostgresValueStorage::Text(value.format("%Y-%m-%d %H:%M:%S.%f %:z").to_string()),
+		))
+	}
+
 	fn sql_value_placeholder() -> &'static str {
 		"$0"
 	}
@@ -187,28 +195,28 @@ impl crate::vendor::requirements::DatabaseVendor<Postgres> for Postgres {
 	fn execute_crud_insert<'a>(
 		builder: crate::crud::insert::InsertBuilder<Postgres>,
 		connection: &'a mut <Postgres as sqlx::Database>::Connection,
-	) -> Pin<Box<dyn Future<Output = Result<(), ExecuteError>> + Send + 'a>> {
+	) -> Pin<Box<dyn Future<Output=Result<(), ExecuteError>> + Send + 'a>> {
 		Box::pin(crud::insert::execute(builder, connection))
 	}
 
 	fn execute_crud_update<'a>(
 		builder: crate::crud::update::UpdateBuilder<Postgres, true>,
 		connection: &'a mut <Postgres as sqlx::Database>::Connection,
-	) -> Pin<Box<dyn Future<Output = Result<(), ExecuteError>> + Send + 'a>> {
+	) -> Pin<Box<dyn Future<Output=Result<(), ExecuteError>> + Send + 'a>> {
 		Box::pin(crud::update::execute(builder, connection))
 	}
 
 	fn execute_crud_replace<'a>(
 		builder: crate::crud::replace::ReplaceBuilder<Postgres, true, true>,
 		connection: &'a mut <Postgres as sqlx::Database>::Connection,
-	) -> Pin<Box<dyn Future<Output = Result<(), ExecuteError>> + Send + 'a>> {
+	) -> Pin<Box<dyn Future<Output=Result<(), ExecuteError>> + Send + 'a>> {
 		Box::pin(crud::replace::execute(builder, connection))
 	}
 
 	fn execute_crud_delete<'a>(
 		builder: crate::crud::delete::DeleteBuilder<Postgres>,
 		connection: &'a mut <Postgres as sqlx::Database>::Connection,
-	) -> Pin<Box<dyn Future<Output = Result<(), ExecuteError>> + Send + 'a>> {
+	) -> Pin<Box<dyn Future<Output=Result<(), ExecuteError>> + Send + 'a>> {
 		Box::pin(crud::delete::execute(builder, connection))
 	}
 }

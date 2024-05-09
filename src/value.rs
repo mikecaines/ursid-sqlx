@@ -90,6 +90,8 @@ impl<DB: Database> IntoSqlValue<DB> for Vec<u8> {
 
 #[cfg(feature = "chrono-datetime")]
 mod chrono {
+	use std::fmt::Display;
+	use chrono::TimeZone;
 	use crate::value::Value;
 	use crate::{Database, IntoSqlValue};
 
@@ -108,6 +110,12 @@ mod chrono {
 	impl<DB: Database> IntoSqlValue<DB> for chrono::NaiveTime {
 		fn into_sql_value(self) -> Option<Value<DB>> {
 			DB::value_from_chrono_native_time(self)
+		}
+	}
+
+	impl<DB: Database, T> IntoSqlValue<DB> for chrono::DateTime<T> where T: TimeZone, T::Offset: Display {
+		fn into_sql_value(self) -> Option<Value<DB>> {
+			DB::value_from_chrono_datetime(self)
 		}
 	}
 }
