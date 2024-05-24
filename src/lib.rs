@@ -286,6 +286,7 @@ pub use error::{CrudError, ExecuteError, QueryError, SyntaxError};
 pub use helper::BuilderHelper;
 pub use query::{query, query_as, query_scalar};
 pub use sql_lang::{FrozenSql, IntoRawSql, IntoSql, Sql};
+pub use ursid_sqlx_macros::IntoSqlValue;
 pub use value::IntoSqlValue;
 
 pub trait Database: sqlx::Database + vendor::requirements::DatabaseVendor<Self> {}
