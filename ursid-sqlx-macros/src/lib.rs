@@ -4,11 +4,8 @@ use syn;
 
 #[proc_macro_derive(IntoSqlValue)]
 pub fn into_sql_value_derive(input: TokenStream) -> TokenStream {
-	let ast = syn::parse(input).unwrap();
-	impl_macro(&ast)
-}
+	let ast: syn::DeriveInput = syn::parse(input).unwrap();
 
-fn impl_macro(ast: &syn::DeriveInput) -> TokenStream {
 	let name = &ast.ident;
 
 	let gen = quote! {
