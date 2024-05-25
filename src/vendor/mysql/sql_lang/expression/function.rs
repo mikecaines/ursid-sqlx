@@ -1,6 +1,7 @@
+use sqlx::MySql;
+
 use crate::sql_lang::expression::function::ast::{DateDiff, DateDiffInterval};
 use crate::sql_lang::{IntoRawSql, Sql};
-use sqlx::MySql;
 
 pub fn render_date_diff(ast: DateDiff<MySql>) -> Sql<MySql> {
 	"timestampdiff("

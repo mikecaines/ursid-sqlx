@@ -1,8 +1,9 @@
+use sqlx::MySql;
+
 use crate::crud::delete::DeleteBuilder;
 use crate::error::ExecuteError;
 use crate::query;
 use crate::sql_lang::IntoSql;
-use sqlx::MySql;
 
 pub async fn execute(
 	builder: DeleteBuilder<MySql>,

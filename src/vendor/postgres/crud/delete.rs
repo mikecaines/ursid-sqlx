@@ -1,8 +1,9 @@
+use sqlx::Postgres;
+
 use crate::crud::delete::DeleteBuilder;
 use crate::error::ExecuteError;
 use crate::query;
 use crate::sql_lang::IntoSql;
-use sqlx::Postgres;
 
 pub async fn execute(
 	builder: DeleteBuilder<Postgres>,

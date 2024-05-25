@@ -1,6 +1,7 @@
+use std::marker::PhantomData;
+
 use crate::sql_lang::Sql;
 use crate::{Database, IntoRawSql, IntoSql};
-use std::marker::PhantomData;
 
 #[derive(Debug, Clone, Copy)]
 pub enum ComparisonOp {

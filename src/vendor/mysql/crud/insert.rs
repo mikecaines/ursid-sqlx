@@ -1,7 +1,8 @@
+use sqlx::MySql;
+
 use crate::crud::insert::InsertBuilder;
 use crate::error::ExecuteError;
 use crate::{query, IntoSql};
-use sqlx::MySql;
 
 pub async fn execute(
 	builder: InsertBuilder<MySql>,

@@ -1,6 +1,7 @@
+use sqlx::MySql;
+
 use crate::query::requirements::SqlxQuery;
 use crate::value::requirements::SqlxBindable;
-use sqlx::MySql;
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum MySqlValueStorage {

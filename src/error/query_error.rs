@@ -1,5 +1,6 @@
-use crate::error::ExecuteError;
 use std::fmt::Formatter;
+
+use crate::error::ExecuteError;
 
 #[derive(Debug)]
 pub struct QueryError {}

@@ -1,10 +1,12 @@
+use std::future::Future;
+use std::pin::Pin;
+
+use sqlx::MySql;
+
 use self::value::MySqlValueStorage;
 use crate::sql_lang::expression::function;
 use crate::value::{Value, ValueLogicalKind};
 use crate::{ExecuteError, Sql};
-use sqlx::MySql;
-use std::future::Future;
-use std::pin::Pin;
 
 mod crud;
 mod sql_lang;
@@ -148,7 +150,11 @@ impl crate::vendor::requirements::DatabaseVendor<MySql> for MySql {
 	}
 
 	#[cfg(feature = "chrono-datetime")]
-	fn value_from_chrono_datetime<T>(value: chrono::DateTime<T>) -> Option<Value<MySql>> where T: chrono::TimeZone, T::Offset: std::fmt::Display {
+	fn value_from_chrono_datetime<T>(value: chrono::DateTime<T>) -> Option<Value<MySql>>
+	where
+		T: chrono::TimeZone,
+		T::Offset: std::fmt::Display,
+	{
 		Some(Value::new(
 			ValueLogicalKind::Datetime,
 			MySqlValueStorage::Text(value.format("%Y-%m-%dT%H:%M:%S.%f%:z").to_string()),
@@ -182,28 +188,28 @@ impl crate::vendor::requirements::DatabaseVendor<MySql> for MySql {
 	fn execute_crud_insert<'a>(
 		builder: crate::crud::insert::InsertBuilder<MySql>,
 		connection: &'a mut <MySql as sqlx::Database>::Connection,
-	) -> Pin<Box<dyn Future<Output=Result<(), ExecuteError>> + Send + 'a>> {
+	) -> Pin<Box<dyn Future<Output = Result<(), ExecuteError>> + Send + 'a>> {
 		Box::pin(crud::insert::execute(builder, connection))
 	}
 
 	fn execute_crud_update<'a>(
 		builder: crate::crud::update::UpdateBuilder<MySql, true>,
 		connection: &'a mut <MySql as sqlx::Database>::Connection,
-	) -> Pin<Box<dyn Future<Output=Result<(), ExecuteError>> + Send + 'a>> {
+	) -> Pin<Box<dyn Future<Output = Result<(), ExecuteError>> + Send + 'a>> {
 		Box::pin(crud::update::execute(builder, connection))
 	}
 
 	fn execute_crud_replace<'a>(
 		builder: crate::crud::replace::ReplaceBuilder<MySql, true, true>,
 		connection: &'a mut <MySql as sqlx::Database>::Connection,
-	) -> Pin<Box<dyn Future<Output=Result<(), ExecuteError>> + Send + 'a>> {
+	) -> Pin<Box<dyn Future<Output = Result<(), ExecuteError>> + Send + 'a>> {
 		Box::pin(crud::replace::execute(builder, connection))
 	}
 
 	fn execute_crud_delete<'a>(
 		builder: crate::crud::delete::DeleteBuilder<MySql>,
 		connection: &'a mut <MySql as sqlx::Database>::Connection,
-	) -> Pin<Box<dyn Future<Output=Result<(), ExecuteError>> + Send + 'a>> {
+	) -> Pin<Box<dyn Future<Output = Result<(), ExecuteError>> + Send + 'a>> {
 		Box::pin(crud::delete::execute(builder, connection))
 	}
 }

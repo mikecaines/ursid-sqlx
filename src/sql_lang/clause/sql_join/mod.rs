@@ -1,8 +1,8 @@
+pub(crate) use self::joined_table::JoinedTable;
+pub use self::table_reference::TableReferenceKind;
 use crate::sql_lang::clause::SqlOn;
 use crate::sql_lang::expression::{ColumnReference, TableReference};
 use crate::{Database, IntoRawSql, IntoSql, Sql, SyntaxError};
-pub(crate) use joined_table::JoinedTable;
-pub use table_reference::TableReferenceKind;
 
 mod joined_table;
 mod table_reference;

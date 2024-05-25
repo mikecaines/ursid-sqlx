@@ -1,6 +1,6 @@
-use crate::Database;
-use crate::{crud, sql_lang};
 use std::marker::PhantomData;
+
+use crate::{crud, sql_lang, Database};
 
 /// Provides convenience methods on [Pool](sqlx::Pool) and [Transaction](sqlx::Transaction).
 ///

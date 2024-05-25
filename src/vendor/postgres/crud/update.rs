@@ -1,6 +1,7 @@
+use sqlx::Postgres;
+
 use crate::crud::update::UpdateBuilder;
 use crate::{query, ExecuteError, IntoSql};
-use sqlx::Postgres;
 
 pub async fn execute(
 	builder: UpdateBuilder<Postgres, true>,

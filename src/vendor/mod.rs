@@ -1,11 +1,12 @@
 pub(crate) mod requirements {
+	use std::fmt::Debug;
+	use std::future::Future;
+	use std::pin::Pin;
+
 	use crate::sql_lang::expression::function;
 	use crate::value::requirements::SqlxBindable;
 	use crate::value::Value;
 	use crate::{crud, Database, ExecuteError, Sql};
-	use std::fmt::Debug;
-	use std::future::Future;
-	use std::pin::Pin;
 
 	pub trait DatabaseVendor<DB: Database> {
 		type ValueStorage: SqlxBindable<DB> + Send + Clone + Debug + PartialEq;
@@ -36,8 +37,9 @@ pub(crate) mod requirements {
 
 		#[cfg(feature = "chrono-datetime")]
 		fn value_from_chrono_datetime<T>(value: chrono::DateTime<T>) -> Option<Value<DB>>
-			where T: chrono::TimeZone,
-						T::Offset: std::fmt::Display;
+		where
+			T: chrono::TimeZone,
+			T::Offset: std::fmt::Display;
 
 		fn sql_value_placeholder() -> &'static str;
 
@@ -50,22 +52,22 @@ pub(crate) mod requirements {
 		fn execute_crud_insert<'a>(
 			builder: crud::insert::InsertBuilder<DB>,
 			connection: &'a mut DB::Connection,
-		) -> Pin<Box<dyn Future<Output=Result<(), ExecuteError>> + Send + 'a>>;
+		) -> Pin<Box<dyn Future<Output = Result<(), ExecuteError>> + Send + 'a>>;
 
 		fn execute_crud_update<'a>(
 			builder: crud::update::UpdateBuilder<DB, true>,
 			connection: &'a mut DB::Connection,
-		) -> Pin<Box<dyn Future<Output=Result<(), ExecuteError>> + Send + 'a>>;
+		) -> Pin<Box<dyn Future<Output = Result<(), ExecuteError>> + Send + 'a>>;
 
 		fn execute_crud_replace<'a>(
 			builder: crud::replace::ReplaceBuilder<DB, true, true>,
 			connection: &'a mut DB::Connection,
-		) -> Pin<Box<dyn Future<Output=Result<(), ExecuteError>> + Send + 'a>>;
+		) -> Pin<Box<dyn Future<Output = Result<(), ExecuteError>> + Send + 'a>>;
 
 		fn execute_crud_delete<'a>(
 			builder: crud::delete::DeleteBuilder<DB>,
 			connection: &'a mut DB::Connection,
-		) -> Pin<Box<dyn Future<Output=Result<(), ExecuteError>> + Send + 'a>>;
+		) -> Pin<Box<dyn Future<Output = Result<(), ExecuteError>> + Send + 'a>>;
 	}
 }
 

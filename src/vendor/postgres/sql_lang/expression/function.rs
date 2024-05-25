@@ -1,6 +1,7 @@
+use sqlx::Postgres;
+
 use crate::sql_lang::expression::function::ast::{DateDiff, DateDiffInterval};
 use crate::{IntoRawSql, Sql};
-use sqlx::Postgres;
 
 pub fn render_date_diff(ast: DateDiff<Postgres>) -> Sql<Postgres> {
 	match ast.interval {

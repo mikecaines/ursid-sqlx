@@ -1,6 +1,7 @@
+use sqlx::MySql;
+
 use crate::crud::update::UpdateBuilder;
 use crate::{query, ExecuteError, IntoSql};
-use sqlx::MySql;
 
 pub async fn execute(
 	builder: UpdateBuilder<MySql, true>,

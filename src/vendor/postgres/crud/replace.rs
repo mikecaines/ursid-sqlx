@@ -1,10 +1,11 @@
+use sqlx::Postgres;
+
 use crate::crud::replace::ReplaceBuilder;
 use crate::error::{CrudError, CrudErrorKind, ExecuteError};
 use crate::sql_lang::clause::sql_where::WhereBuilder;
 use crate::sql_lang::statement::Select;
 use crate::sql_lang::{IntoRawSql, IntoSql};
 use crate::{query, sql_lang};
-use sqlx::Postgres;
 
 pub async fn execute(
 	builder: ReplaceBuilder<Postgres, true, true>,

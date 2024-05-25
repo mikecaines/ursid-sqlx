@@ -1,6 +1,7 @@
+use std::marker::PhantomData;
+
 use crate::sql_lang::Sql;
 use crate::Database;
-use std::marker::PhantomData;
 
 pub fn current_datetime<DB: Database>() -> ast::CurrentDatetime<DB> {
 	ast::CurrentDatetime { db: PhantomData }
@@ -93,9 +94,10 @@ pub fn abs<DB: Database, E: Into<Sql<DB>>>(expr: E) -> ast::Abs<DB> {
 }
 
 pub mod ast {
+	use std::marker::PhantomData;
+
 	use crate::sql_lang::Sql;
 	use crate::{Database, IntoRawSql};
-	use std::marker::PhantomData;
 
 	pub struct CurrentDatetime<DB: Database> {
 		pub(crate) db: PhantomData<DB>,

@@ -1,6 +1,7 @@
+use sqlx::Postgres;
+
 use crate::query::requirements::SqlxQuery;
 use crate::value::requirements::SqlxBindable;
-use sqlx::Postgres;
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum PostgresValueStorage {

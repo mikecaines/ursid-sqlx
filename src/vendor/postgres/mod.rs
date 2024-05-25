@@ -1,12 +1,14 @@
+use std::future::Future;
+use std::pin::Pin;
+
+use lazy_static::lazy_static;
+use regex::{Captures, Regex};
+use sqlx::Postgres;
+
 use self::value::PostgresValueStorage;
 use crate::sql_lang::expression::function;
 use crate::value::{Value, ValueLogicalKind};
 use crate::{ExecuteError, Sql};
-use lazy_static::lazy_static;
-use regex::{Captures, Regex};
-use sqlx::Postgres;
-use std::future::Future;
-use std::pin::Pin;
 
 mod crud;
 mod sql_lang;
@@ -156,7 +158,11 @@ impl crate::vendor::requirements::DatabaseVendor<Postgres> for Postgres {
 	}
 
 	#[cfg(feature = "chrono-datetime")]
-	fn value_from_chrono_datetime<T>(value: chrono::DateTime<T>) -> Option<Value<Postgres>> where T: chrono::TimeZone, T::Offset: std::fmt::Display {
+	fn value_from_chrono_datetime<T>(value: chrono::DateTime<T>) -> Option<Value<Postgres>>
+	where
+		T: chrono::TimeZone,
+		T::Offset: std::fmt::Display,
+	{
 		Some(Value::new(
 			ValueLogicalKind::Datetime,
 			PostgresValueStorage::Text(value.format("%Y-%m-%d %H:%M:%S.%f %:z").to_string()),
@@ -195,28 +201,28 @@ impl crate::vendor::requirements::DatabaseVendor<Postgres> for Postgres {
 	fn execute_crud_insert<'a>(
 		builder: crate::crud::insert::InsertBuilder<Postgres>,
 		connection: &'a mut <Postgres as sqlx::Database>::Connection,
-	) -> Pin<Box<dyn Future<Output=Result<(), ExecuteError>> + Send + 'a>> {
+	) -> Pin<Box<dyn Future<Output = Result<(), ExecuteError>> + Send + 'a>> {
 		Box::pin(crud::insert::execute(builder, connection))
 	}
 
 	fn execute_crud_update<'a>(
 		builder: crate::crud::update::UpdateBuilder<Postgres, true>,
 		connection: &'a mut <Postgres as sqlx::Database>::Connection,
-	) -> Pin<Box<dyn Future<Output=Result<(), ExecuteError>> + Send + 'a>> {
+	) -> Pin<Box<dyn Future<Output = Result<(), ExecuteError>> + Send + 'a>> {
 		Box::pin(crud::update::execute(builder, connection))
 	}
 
 	fn execute_crud_replace<'a>(
 		builder: crate::crud::replace::ReplaceBuilder<Postgres, true, true>,
 		connection: &'a mut <Postgres as sqlx::Database>::Connection,
-	) -> Pin<Box<dyn Future<Output=Result<(), ExecuteError>> + Send + 'a>> {
+	) -> Pin<Box<dyn Future<Output = Result<(), ExecuteError>> + Send + 'a>> {
 		Box::pin(crud::replace::execute(builder, connection))
 	}
 
 	fn execute_crud_delete<'a>(
 		builder: crate::crud::delete::DeleteBuilder<Postgres>,
 		connection: &'a mut <Postgres as sqlx::Database>::Connection,
-	) -> Pin<Box<dyn Future<Output=Result<(), ExecuteError>> + Send + 'a>> {
+	) -> Pin<Box<dyn Future<Output = Result<(), ExecuteError>> + Send + 'a>> {
 		Box::pin(crud::delete::execute(builder, connection))
 	}
 }

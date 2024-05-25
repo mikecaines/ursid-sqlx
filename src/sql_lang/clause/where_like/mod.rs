@@ -1,3 +1,4 @@
+pub(crate) use self::predicate::PredicateKind;
 use crate::error::SyntaxError;
 pub(crate) use crate::sql_lang::expression::grammar::LogicalOp;
 use crate::sql_lang::expression::{
@@ -6,7 +7,6 @@ use crate::sql_lang::expression::{
 use crate::sql_lang::{ColRef, Sql};
 use crate::value::IntoSqlValue;
 use crate::{sql_lang, Database, IntoRawSql, IntoSql};
-pub(crate) use predicate::PredicateKind;
 
 mod predicate;
 

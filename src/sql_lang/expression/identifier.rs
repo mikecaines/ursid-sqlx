@@ -1,5 +1,6 @@
-use crate::{Database, IntoRawSql, Sql};
 use std::marker::PhantomData;
+
+use crate::{Database, IntoRawSql, Sql};
 
 pub struct TableAndColumnReference<DB: Database> {
 	pub(crate) db: PhantomData<DB>,
