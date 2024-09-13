@@ -21,7 +21,7 @@ pub(crate) mod requirements {
 pub fn query_scalar<'q, DB, O>(
 	sql: &'q mut FrozenSql<DB>,
 ) -> Result<
-	sqlx::query::QueryScalar<'q, DB, O, <DB as sqlx::database::HasArguments<'q>>::Arguments>,
+	sqlx::query::QueryScalar<'q, DB, O, <DB as sqlx::database::Database>::Arguments<'q>>,
 	ExecuteError,
 >
 where
@@ -47,7 +47,7 @@ where
 }
 
 impl<'q, DB, O> SqlxQuery<'q, DB>
-	for sqlx::query::QueryScalar<'q, DB, O, <DB as sqlx::database::HasArguments<'q>>::Arguments>
+	for sqlx::query::QueryScalar<'q, DB, O, <DB as sqlx::database::Database>::Arguments<'q>>
 where
 	DB: sqlx::Database,
 	(O,): for<'r> sqlx::FromRow<'r, DB::Row>,
@@ -60,7 +60,7 @@ where
 pub fn query_as<'q, DB, O>(
 	sql: &'q mut FrozenSql<DB>,
 ) -> Result<
-	sqlx::query::QueryAs<'q, DB, O, <DB as sqlx::database::HasArguments<'q>>::Arguments>,
+	sqlx::query::QueryAs<'q, DB, O, <DB as sqlx::database::Database>::Arguments<'q>>,
 	ExecuteError,
 >
 where
@@ -86,7 +86,7 @@ where
 }
 
 impl<'q, DB, O> SqlxQuery<'q, DB>
-	for sqlx::query::QueryAs<'q, DB, O, <DB as sqlx::database::HasArguments<'q>>::Arguments>
+	for sqlx::query::QueryAs<'q, DB, O, <DB as sqlx::database::Database>::Arguments<'q>>
 where
 	DB: Database,
 	O: for<'r> sqlx::FromRow<'r, DB::Row>,
@@ -98,10 +98,7 @@ where
 
 pub fn query<'q, DB>(
 	sql: &'q mut FrozenSql<DB>,
-) -> Result<
-	sqlx::query::Query<'q, DB, <DB as sqlx::database::HasArguments<'q>>::Arguments>,
-	ExecuteError,
->
+) -> Result<sqlx::query::Query<'q, DB, <DB as sqlx::database::Database>::Arguments<'q>>, ExecuteError>
 where
 	DB: Database,
 	Option<Vec<u8>>: sqlx::Encode<'q, DB> + sqlx::Type<DB>,
@@ -124,7 +121,7 @@ where
 }
 
 impl<'q, DB: sqlx::Database> SqlxQuery<'q, DB>
-	for sqlx::query::Query<'q, DB, <DB as sqlx::database::HasArguments<'q>>::Arguments>
+	for sqlx::query::Query<'q, DB, <DB as sqlx::database::Database>::Arguments<'q>>
 {
 	fn bind_to_sqlx<T: 'q + Send + sqlx::Encode<'q, DB> + sqlx::Type<DB>>(self, value: T) -> Self {
 		self.bind(value)
